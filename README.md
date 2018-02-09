@@ -1,6 +1,7 @@
 # Aegis
 
-**TODO: Add description**
+Lightweight, flexible resource authorization.
+(inspired by the Ruby gem [Pundit](https://github.com/varvet/pundit)
 
 ## Installation
 
@@ -18,4 +19,5 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/aegis](https://hexdocs.pm/aegis).
+
 
