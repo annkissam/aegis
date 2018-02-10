@@ -1,6 +1,6 @@
 defmodule Aegis do
   @moduledoc """
-  Lightweight, flexible resource authorization.  
+  Lightweight, flexible resource authorization.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Aegis do
 
 
   ## Example
-  
+
   ```
   defmodule Puppy do
     defstruct [id: nil, user_id: nil, hungry: false]
@@ -38,11 +38,11 @@ defmodule Aegis do
     iex> Aegis.sanctioned?(user, action, resource)
     ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
   """
-  @spec sanctioned?(user :: any, action :: atom, resource :: any) :: boolean 
+  @spec sanctioned?(user :: any, action :: atom, resource :: any) :: boolean
   def sanctioned?(user, action, resource) do
     resource
     |> fetch_policy_module
-    |> apply(:sanction, [user, action, resource])
+    |> sanctioned?(user, action, resource)
   end
 
   @spec sanctioned?(mod :: module, user :: any, action :: atom, resource :: any) :: boolean
