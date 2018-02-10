@@ -14,7 +14,8 @@ defmodule Puppy.Policy do
 
   def sanction(_user, :index, _puppy), do: true
 
-  def scope(_user, _scope, _action), do: :some_scope
+  def scope(_user, _scope, :index), do: :index_scope
+  def scope(_user, _scope, :show), do: :show_scope
 end
 
 defmodule Kitten do

@@ -50,11 +50,47 @@ defmodule Aegis do
     apply(mod, :sanction, [user, action, resource])
   end
 
+  @doc """
+  Returns scope for a resource for a user for a given action as dictated by the
+  resource's corresponding policy definition.
+
+
+  ## Example
+
+  ```
+  defmodule Puppy do
+    defstruct [id: nil, user_id: nil, hungry: false]
+  end
+
+  defmodule Puppy.Policy do
+    @behaviour Aegis.Policy
+
+    def scope(_user, _scope, :index), do: :index_scope
+    def scope(_user, _scope, :show), do: :show_scope
+  end
+
+  defmodule Kitten do
+    defstruct [id: nil, user_id: nil, hungry: false]
+  end
+  ```
+
+    iex> user = :user
+    iex> scope = %{from: {"puppies", Puppy}}
+    iex> Aegis.auth_scope(user, scope, :index)
+    :index_scope
+    iex> Aegis.auth_scope(user, scope, :show)
+    :show_scope
+
+    iex> user = :user
+    iex> scope = %{from: {"kittens", Kitten}}
+    iex> Aegis.auth_scope(user, scope, :index)
+    ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
+  """
   @spec auth_scope(user :: any, scope :: any, action :: atom) :: any
   def auth_scope(user, scope, action) do
     scope
     |> fetch_policy_module
-    |> apply(:scope, [user, scope, action])
+    |> auth_scope(user, scope, action)
   end
 
   @spec auth_scope(mod :: module, user :: any, scope :: any, action :: atom) :: any
