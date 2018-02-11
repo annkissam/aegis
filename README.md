@@ -1,7 +1,8 @@
 # Aegis
 
 Lightweight, flexible resource authorization.
-(inspired by the Ruby gem [Pundit](https://github.com/varvet/pundit)
+
+(inspired by the Ruby gem [Pundit](https://github.com/varvet/pundit))
 
 ## Installation
 
