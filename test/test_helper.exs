@@ -22,5 +22,4 @@ defmodule Kitten do
   defstruct [id: nil, user_id: nil, hungry: false]
 end
 
-
 ExUnit.start()
