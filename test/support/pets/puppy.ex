@@ -8,12 +8,13 @@ defmodule Pets.Puppy do
   def new(%{id: id} = params) do
     puppy = struct!(__MODULE__, params)
 
-    Agent.start_link(fn -> puppy end, name: {:global, id})
-    Agent.update(__MODULE__, & &1 ++ puppy, name: __MODULE__)
+    Agent.start_link(fn -> puppy end, name: {:global, {__MODULE__, id}})
+
+    Agent.update(__MODULE__, &[puppy | &1])
   end
 
   def get(id) do
-    Agent.get({:via, __MODULE__, id}, & &1)
+    Agent.get({:global, {__MODULE__, id}}, & &1)
   end
 
   def list() do
