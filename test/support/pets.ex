@@ -13,4 +13,10 @@ defmodule Pets do
       false -> nil
     end
   end
+
+  def populate_animalz do
+    Pets.Puppy.init
+    Pets.Puppy.new(%{id: 1, hungry: true})
+    Pets.Puppy.new(%{id: 2, hungry: false})
+  end
 end
