@@ -1,6 +1,6 @@
 defmodule Aegis do
   @moduledoc """
-  Lightweight, flexible resource authorization.
+  Lightweight, flexible authorization.
   """
 
   @doc """
