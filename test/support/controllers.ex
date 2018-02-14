@@ -27,6 +27,24 @@ defmodule AegisTest.PuppyController do
   end
 end
 
+defmodule AegisTest.PuppyWithoutExcludedActionsController do
+  use Phoenix.Controller, namespace: AegisTest
+  import Plug.Conn
+
+  use Aegis.Controller
+
+  action_fallback AegisTest.FallbackController
+
+  def index(conn, _params, user) do
+    with {:ok, conn} <- authorized?(conn, user, Puppy, :index) do
+      text conn, "showing pup(s)"
+    end
+  end
+
+  def current_user(_conn) do
+    %User{id: 1}
+  end
+end
 
 defmodule AegisTest.FallbackController do
   use Phoenix.Controller, namespace: AegisTest

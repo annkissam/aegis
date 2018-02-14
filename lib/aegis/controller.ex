@@ -110,14 +110,20 @@ if Code.ensure_loaded?(Phoenix) do
       excluded_actions = Keyword.get(opts, :except, [])
 
       quote do
-        def action(conn, _opts) do
-          conn
-          |> action_name()
-          |> case do
-            actn when actn in unquote(excluded_actions) ->
-              apply(__MODULE__, actn, [conn, conn.params])
-            actn ->
-              Aegis.Controller.call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
+        if Enum.empty?(unquote(excluded_actions)) do
+          def action(conn, _opts) do
+            Aegis.Controller.call_action_and_verify_authorized(__MODULE__, action_name(conn), conn, current_user(conn))
+          end
+        else
+          def action(conn, _opts) do
+            conn
+            |> action_name()
+            |> case do
+              actn when actn in unquote(excluded_actions) ->
+                apply(__MODULE__, actn, [conn, conn.params])
+              actn ->
+                Aegis.Controller.call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
+            end
           end
         end
 

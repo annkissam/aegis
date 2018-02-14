@@ -38,4 +38,13 @@ defmodule Aegis.ControllerTest do
       AegisTest.PuppyController.action(conn, [])
     end
   end
+
+  test "index (without excluded actions)" do
+    conn = Plug.Test.conn(:get, "/puppies")
+           |> Plug.Conn.put_private(:phoenix_action, :index)
+
+    conn = AegisTest.PuppyWithoutExcludedActionsController.action(conn, [])
+
+    assert text_response(conn, 200) == "showing pup(s)"
+  end
 end
