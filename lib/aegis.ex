@@ -4,7 +4,7 @@ defmodule Aegis do
   """
 
   @doc """
-  Returns `true` if a user is sanctioned to perform an action on a given resource as dictated by the resource's corresponding policy definition.
+  Returns `true` if a user is authorized to perform an action on a given resource as dictated by the resource's corresponding policy definition.
 
 
   ## Example
@@ -17,7 +17,7 @@ defmodule Aegis do
   defmodule Puppy.Policy do
     @behaviour Aegis.Policy
 
-    def sanction(_user, :index, _puppy), do: true
+    def authorize(_user, :index, _puppy), do: true
   end
 
   defmodule Kitten do
@@ -27,27 +27,27 @@ defmodule Aegis do
 
     iex> user = :user
     iex> resource = Puppy
-    iex> Aegis.sanctioned?(user, :index, resource)
+    iex> Aegis.authorized?(user, :index, resource)
     true
-    iex> Aegis.sanctioned?(user, :show, resource)
+    iex> Aegis.authorized?(user, :show, resource)
     false
 
     iex> user = :user
     iex> action = :index
     iex> resource = Kitten
-    iex> Aegis.sanctioned?(user, action, resource)
+    iex> Aegis.authorized?(user, action, resource)
     ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
   """
-  @spec sanctioned?(user :: any, action :: atom, resource :: any) :: boolean
-  def sanctioned?(user, action, resource) do
+  @spec authorized?(user :: any, action :: atom, resource :: any) :: boolean
+  def authorized?(user, action, resource) do
     resource
     |> fetch_policy_module
-    |> sanctioned?(user, action, resource)
+    |> authorized?(user, action, resource)
   end
 
-  @spec sanctioned?(mod :: module, user :: any, action :: atom, resource :: any) :: boolean
-  def sanctioned?(mod, user, action, resource) do
-    apply(mod, :sanction, [user, action, resource])
+  @spec authorized?(mod :: module, user :: any, action :: atom, resource :: any) :: boolean
+  def authorized?(mod, user, action, resource) do
+    apply(mod, :authorize, [user, action, resource])
   end
 
   @doc """
