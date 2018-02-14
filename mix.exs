@@ -2,6 +2,11 @@ defmodule Aegis.MixProject do
   use Mix.Project
 
   @version "0.1.0"
+  @url "https://github.com/annkissam/aegis"
+  @maintainers [
+    "Josh Adams",
+    "Eric Sullivan",
+  ]
 
   def project do
     [
@@ -10,9 +15,16 @@ defmodule Aegis.MixProject do
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      package: package(),
+      source_url: @url,
+      homepage_url: @url,
       elixirc_paths: elixirc_paths(Mix.env),
+      aliases: aliases(),
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -28,6 +40,22 @@ defmodule Aegis.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test),     do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp package do
+    [
+      name: :aegis,
+      maintainers: @maintainers,
+      licenses: ["MIT"],
+      links: %{github: @url},
+      files: ["lib", "mix.exs", "README*", "LICENSE*", "CHANGELOG.md"],
+    ]
+  end
+
+  defp aliases do
+    ["publish": ["hex.publish", &git_tag/1]]
+  end
+
+  defp git_tag(_args) do
+    System.cmd "git", ["tag", "v" <> Mix.Project.config[:version]]
+    System.cmd "git", ["push", "--tags"]
+  end
 end

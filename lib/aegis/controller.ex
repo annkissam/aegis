@@ -51,27 +51,15 @@ if Code.ensure_loaded?(Phoenix) do
     end
 
     @doc """
-    Calls controller action *without* checking the connection to determine
-    whether or not Aegis authorization has been performed.
-
-    ## Examples
-      <TODO>
-    """
-    # @spec call_excluded_action(module,)
-    def call_excluded_action(mod, actn, conn) do
-      apply(mod, actn, [conn, conn.params])
-    end
-
-    @doc """
     Calls controller action and performs a check on the connection in order to
     determine whether or not Aegis authorization has been performed.
 
     ## Examples
       <TODO>
     """
-    #TODO: @spec call_included_action
-    # @spec call_included_action(module, atom, Plug.Conn.t))
-    def call_included_action(mod, actn, conn, user) do
+    #TODO: @spec call_action_and_verify_authorized
+    # @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t))
+    def call_action_and_verify_authorized(mod, actn, conn, user) do
       conn = Plug.Conn.register_before_send(conn, fn conn ->
         if conn.private[:aegis_auth_performed] do
           conn
@@ -127,23 +115,18 @@ if Code.ensure_loaded?(Phoenix) do
           |> action_name()
           |> case do
             actn when actn in unquote(excluded_actions) ->
-              Aegis.Controller.call_excluded_action(__MODULE__, actn, conn)
+              apply(__MODULE__, actn, [conn, conn.params])
             actn ->
-              Aegis.Controller.call_included_action(__MODULE__, actn, conn, current_user(conn))
+              Aegis.Controller.call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
           end
-        end
-
-        def authorized?(conn, user, resource, action) do
-          Aegis.Controller.authorized?(conn, user, resource, action)
-        end
-
-        def auth_scope(user, scope, action) do
-          Aegis.Controller.auth_scope(user, scope, action)
         end
 
         def current_user(_), do: raise "`current_user/1` not defined for #{__MODULE__}"
 
         defoverridable [current_user: 1]
+
+        defdelegate authorized?(conn, user, resource, action), to: Aegis.Controller
+        defdelegate auth_scope(user, scope, action), to: Aegis
       end
     end
   end
