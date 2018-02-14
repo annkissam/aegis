@@ -15,6 +15,7 @@ defmodule Aegis.MixProject do
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      description: "Lightweight, flexible resource authorization.",
       package: package(),
       source_url: @url,
       homepage_url: @url,
