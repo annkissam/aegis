@@ -74,17 +74,17 @@ defmodule Aegis do
   end
   ```
 
-    iex> user = :user
-    iex> scope = %{from: {"puppies", Puppy}}
-    iex> Aegis.auth_scope(user, scope, :index)
-    :index_scope
-    iex> Aegis.auth_scope(user, scope, :show)
-    :show_scope
+      iex> user = :user
+      iex> scope = %{from: {"puppies", Puppy}}
+      iex> Aegis.auth_scope(user, scope, :index)
+      :index_scope
+      iex> Aegis.auth_scope(user, scope, :show)
+      :show_scope
 
-    iex> user = :user
-    iex> scope = %{from: {"kittens", Kitten}}
-    iex> Aegis.auth_scope(user, scope, :index)
-    ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
+      iex> user = :user
+      iex> scope = %{from: {"kittens", Kitten}}
+      iex> Aegis.auth_scope(user, scope, :index)
+      ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
   """
   @spec auth_scope(user :: any, scope :: any, action :: atom) :: any
   def auth_scope(user, scope, action) do
