@@ -9,10 +9,10 @@ end
 defmodule Puppy.Policy do
   @behaviour Aegis.Policy
 
-  def sanction(%User{id: id}, :show, %Puppy{user_id: id}), do: true
-  def sanction(_user, :show, _puppy), do: false
+  def authorize(%User{id: id}, :show, %Puppy{user_id: id}), do: true
+  def authorize(_user, :show, _puppy), do: false
 
-  def sanction(_user, :index, _puppy), do: true
+  def authorize(_user, :index, _puppy), do: true
 
   def scope(_user, _scope, :index), do: :index_scope
   def scope(_user, _scope, :show), do: :show_scope
@@ -30,9 +30,7 @@ defmodule AegisTest.PuppyController do
     text conn, "showing pup(s)"
   end
 
-  def show(conn, %{"id" => 3}, user) do
-    puppy = %Puppy{user_id: 1}
-
+  def show(conn, %{"id" => 3}, _user) do
     text conn, "showing pup"
   end
 
@@ -44,7 +42,7 @@ defmodule AegisTest.PuppyController do
     end
   end
 
-  def current_user(conn) do
+  def current_user(_conn) do
     %User{id: 1}
   end
 end
@@ -55,7 +53,6 @@ end
 
 defmodule AegisTest.FallbackController do
   use Phoenix.Controller, namespace: AegisTest
-  import Plug.Conn
 
   def call(conn, {:error, :not_authorized}) do
     text conn, "not authorized"

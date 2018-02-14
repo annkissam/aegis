@@ -19,8 +19,8 @@ if Code.ensure_loaded?(Phoenix) do
     defmodule Puppy.Policy do
       @behaviour Aegis.Policy
 
-      def sanction(_user, :index, _puppy), do: true
-      def sanction(_user, :show, _puppy), do: false
+      def authorize(_user, :index, _puppy), do: true
+      def authorize(_user, :show, _puppy), do: false
     end
     ```
 
@@ -43,7 +43,7 @@ if Code.ensure_loaded?(Phoenix) do
     def authorized?(conn, user, resource, action) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
-      if Aegis.sanctioned?(user, action, resource) do
+      if Aegis.authorized?(user, action, resource) do
         {:ok, conn}
       else
         {:error, :not_authorized}
