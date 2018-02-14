@@ -24,20 +24,20 @@ if Code.ensure_loaded?(Phoenix) do
     end
     ```
 
-      iex> conn = %Plug.Conn{}
-      iex> user = :user
-      iex> resource = Puppy
-      iex> action = :index
-      iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action)
-      iex> conn.private[:aegis_auth_performed]
-      true
+        iex> conn = %Plug.Conn{}
+        iex> user = :user
+        iex> resource = Puppy
+        iex> action = :index
+        iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action)
+        iex> conn.private[:aegis_auth_performed]
+        true
 
-      iex> conn = %Plug.Conn{}
-      iex> user = :user
-      iex> resource = Puppy
-      iex> action = :show
-      iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action)
-      true
+        iex> conn = %Plug.Conn{}
+        iex> user = :user
+        iex> resource = Puppy
+        iex> action = :show
+        iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action)
+        true
     """
     @spec authorized?(Plug.Conn.t, term, term, atom) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
     def authorized?(conn, user, resource, action) do
@@ -55,10 +55,10 @@ if Code.ensure_loaded?(Phoenix) do
     determine whether or not Aegis authorization has been performed.
 
     ## Examples
-      <TODO>
+
+
     """
-    #TODO: @spec call_action_and_verify_authorized
-    # @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t))
+    @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t, term) :: Plug.t
     def call_action_and_verify_authorized(mod, actn, conn, user) do
       conn = Plug.Conn.register_before_send(conn, fn conn ->
         if conn.private[:aegis_auth_performed] do

@@ -18,19 +18,19 @@ defmodule Aegis.PolicyFinder do
 
   - when Puppy.Policy is defined
 
-    iex> Aegis.PolicyFinder.call(Puppy)
-    {:ok, Puppy.Policy}
-    iex> Aegis.PolicyFinder.call(%Puppy{}) 
-    {:ok, Puppy.Policy}
+      iex> Aegis.PolicyFinder.call(Puppy)
+      {:ok, Puppy.Policy}
+      iex> Aegis.PolicyFinder.call(%Puppy{})
+      {:ok, Puppy.Policy}
 
   - when a policy is **not** defined for a structure
 
-    iex> Aegis.PolicyFinder.call(Kitten)  
-    {:error, "Elixir.Kitten.Policy"}
-    iex> Aegis.PolicyFinder.call(%Kitten{}) 
-    {:error, "Elixir.Kitten.Policy"}
-    iex> Aegis.PolicyFinder.call(nil)
-    {:error, nil}
+      iex> Aegis.PolicyFinder.call(Kitten)
+      {:error, "Elixir.Kitten.Policy"}
+      iex> Aegis.PolicyFinder.call(%Kitten{})
+      {:error, "Elixir.Kitten.Policy"}
+      iex> Aegis.PolicyFinder.call(nil)
+      {:error, nil}
   """
   @spec call(any) :: module | :error
   def call(arg), do: policy_module(arg)
