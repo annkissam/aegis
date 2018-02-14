@@ -19,6 +19,7 @@ defmodule Aegis.MixProject do
       package: package(),
       source_url: @url,
       homepage_url: @url,
+      docs: docs(),
       elixirc_paths: elixirc_paths(Mix.env),
       aliases: aliases(),
     ]
@@ -38,6 +39,14 @@ defmodule Aegis.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.3", optional: true},
+      {:ex_doc, "~> 0.10", only: :dev},
+    ]
+  end
+
+  def docs do
+    [
+      extras: ["README.md", "CHANGELOG.md"],
+      source_ref: "v#{@version}"
     ]
   end
 
