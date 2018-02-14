@@ -23,7 +23,9 @@ defmodule Aegis.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    []
+    [
+      {:phoenix, "~> 1.3", optional: true},
+    ]
   end
 
   defp elixirc_paths(:test),     do: ["lib", "test/support"]
