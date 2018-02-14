@@ -24,7 +24,7 @@ defmodule Aegis.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:plug, "~> 1.4"},
+      {:plug, "~> 1.4", optional: true},
     ]
   end
 
