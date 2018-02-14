@@ -1,3 +1,5 @@
-# v 0.1.0
+# v 0.1.1
+* Remove warning when :except is empty (on Aegis.Controller)
 
-Initial Release
+# v 0.1.0
+* Initial Release
