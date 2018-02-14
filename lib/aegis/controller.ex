@@ -1,4 +1,4 @@
-if Code.ensure_loaded?(Plug) do
+if Code.ensure_loaded?(Phoenix) do
   defmodule Aegis.Controller do
     @moduledoc """
     Wraps controllers with Aegis authorization functionality.
@@ -28,7 +28,7 @@ if Code.ensure_loaded?(Plug) do
       iex> user = :user
       iex> resource = Puppy
       iex> action = :index
-      iex> {:ok, conn} = Aegis.Controller.authorize(conn, user, resource, action)
+      iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action)
       iex> conn.private[:aegis_auth_performed]
       true
 
@@ -36,11 +36,11 @@ if Code.ensure_loaded?(Plug) do
       iex> user = :user
       iex> resource = Puppy
       iex> action = :show
-      iex> {:error, :not_authorized} == Aegis.Controller.authorize(conn, user, resource, action)
+      iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action)
       true
     """
-    @spec authorize(Plug.Conn.t, term, term, atom) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
-    def authorize(conn, user, resource, action) do
+    @spec authorized?(Plug.Conn.t, term, term, atom) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
+    def authorized?(conn, user, resource, action) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
       if Aegis.sanctioned?(user, action, resource) do
@@ -57,7 +57,7 @@ if Code.ensure_loaded?(Plug) do
     ## Examples
       <TODO>
     """
-    @spec call_excluded_action(module,
+    # @spec call_excluded_action(module,)
     def call_excluded_action(mod, actn, conn) do
       apply(mod, actn, [conn, conn.params])
     end
@@ -70,10 +70,8 @@ if Code.ensure_loaded?(Plug) do
       <TODO>
     """
     #TODO: @spec call_included_action
-    # @spec call_excluded_action(module, atom, Plug.Conn.t))
-    def call_included_action(mod, actn, conn) do
-      user = current_user(conn)
-
+    # @spec call_included_action(module, atom, Plug.Conn.t))
+    def call_included_action(mod, actn, conn, user) do
       conn = Plug.Conn.register_before_send(conn, fn conn ->
         if conn.private[:aegis_auth_performed] do
           conn
@@ -90,38 +88,40 @@ if Code.ensure_loaded?(Plug) do
 
     ## Options
     - `except` - list of actions to exclude from aegis authorization; defaults to an empty list
-    - `user_fn` - function used to fetch user; defaults to an anonymous function that returns `nil`
-      - e.g.) <MyAppWeb>.Auth.Curator.current_resource(conn)
 
     ## Examples:
 
-      ```
-      defmodule Puppy do
-        defstruct [id: nil, user_id: nil, hungry: false]
-      end
+    For Phoenix applications:
 
-      defmodule Puppy.Policy do
-        @behaviour Aegis.Policy
+    ```
+    defmodule MyApp.PuppyController do
+      use MyApp, :controller
+      use Aegis.Controller
 
-        def sanction(_user, :index, _puppy), do: true
-        def sanction(_user, :show, _puppy), do: false
+      def current_user(conn) do
+        conn.assigns[:user]
       end
-      ```
-      <TODO>
+    end
+    ```
+
+    if you want to allow some actions to skip authorization, just use the
+    `except` option:
+
+    ```
+    defmodule MyApp.Controller do
+      use MyApp, :controller
+      use Aegis.Controller, except: [:custom_action]
+
+      def current_user(conn) do
+        conn.assigns[:user]
+      end
+    end
+    ```
     """
     defmacro __using__(opts \\ []) do
       excluded_actions = Keyword.get(opts, :except, [])
-      # TODO(?):
-      # Phoenix-specific...
-      # action_fallback_handler = Keyword.get(opts, :fallback_handler, nil)
 
       quote do
-        # TODO:
-        # Phoenix-specific...
-        # action_fallback FreshbooksWeb.Auth.ErrorHandler
-        # maybe something like:
-        # action_fallback unquote(fallback_handler)
-
         def action(conn, _opts) do
           conn
           |> action_name()
@@ -129,23 +129,21 @@ if Code.ensure_loaded?(Plug) do
             actn when actn in unquote(excluded_actions) ->
               Aegis.Controller.call_excluded_action(__MODULE__, actn, conn)
             actn ->
-              Aegis.Controller.call_included_action(__MODULE__, actn, conn)
+              Aegis.Controller.call_included_action(__MODULE__, actn, conn, current_user(conn))
           end
         end
 
-        def authorize(conn, user, resource, action) do
-          Aegis.Controller.authorize(conn, user, resource, action)
+        def authorized?(conn, user, resource, action) do
+          Aegis.Controller.authorized?(conn, user, resource, action)
         end
 
         def auth_scope(user, scope, action) do
           Aegis.Controller.auth_scope(user, scope, action)
         end
 
-        def current_user(conn) do
-          raise "must define me"
-        end
+        def current_user(_), do: raise "`current_user/1` not defined for #{__MODULE__}"
 
-        defoverridable [action: 2, authorize: 4, auth_scope: 3, current_user: 1]
+        defoverridable [current_user: 1]
       end
     end
   end
