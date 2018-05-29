@@ -3,6 +3,10 @@ defmodule Aegis do
   Lightweight, flexible authorization.
   """
 
+  @type requester_t :: Process.t() | any()
+
+  @type request_t :: Tuple.t() | fun()
+
   @doc """
   Returns `true` if a user is authorized to perform an action on a given resource as dictated by the resource's corresponding policy definition.
 
@@ -38,69 +42,17 @@ defmodule Aegis do
     iex> Aegis.authorized?(user, action, resource)
     ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
   """
-  @spec authorized?(user :: any, action :: atom, resource :: any) :: boolean
-  def authorized?(user, action, resource) do
-    resource
-    |> fetch_policy_module
-    |> authorized?(user, action, resource)
+  @spec authorized?(__MODULE__.requester_t(), __MODULE__.request_t(), module()) :: boolean
+  def authorized?(requester, request, policy \\ nil)
+  def authorized?(requester, request, nil) do
+    authorized?(requester, request, fetch_policy_module(request))
+  end
+  def authorized?(requester, request, policy) do
+    apply(policy, :authorized?, [requester, request])
   end
 
-  @spec authorized?(mod :: module, user :: any, action :: atom, resource :: any) :: boolean
-  def authorized?(mod, user, action, resource) do
-    apply(mod, :authorize, [user, action, resource])
-  end
-
-  @doc """
-  Returns scope for a resource for a user for a given action as dictated by the
-  resource's corresponding policy definition.
-
-
-  ## Example
-
-  ```
-  defmodule Puppy do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
-
-  defmodule Puppy.Policy do
-    @behaviour Aegis.Policy
-
-    def scope(_user, _scope, :index), do: :index_scope
-    def scope(_user, _scope, :show), do: :show_scope
-  end
-
-  defmodule Kitten do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
-  ```
-
-      iex> user = :user
-      iex> scope = %{from: {"puppies", Puppy}}
-      iex> Aegis.auth_scope(user, scope, :index)
-      :index_scope
-      iex> Aegis.auth_scope(user, scope, :show)
-      :show_scope
-
-      iex> user = :user
-      iex> scope = %{from: {"kittens", Kitten}}
-      iex> Aegis.auth_scope(user, scope, :index)
-      ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
-  """
-  @spec auth_scope(user :: any, scope :: any, action :: atom) :: any
-  def auth_scope(user, scope, action) do
-    scope
-    |> fetch_policy_module
-    |> auth_scope(user, scope, action)
-  end
-
-  @spec auth_scope(mod :: module, user :: any, scope :: any, action :: atom) :: any
-  def auth_scope(mod, user, scope, action) do
-    apply(mod, :scope, [user, scope, action])
-  end
-
-  @spec fetch_policy_module(any) :: module | :error
-  def fetch_policy_module(arg) do
-    case Aegis.PolicyFinder.call(arg) do
+  defp fetch_policy_module(arg) do
+    case __MODULE__.PolicyFinder.call(arg) do
       {:error, nil} -> raise "No Policy for nil object"
       {:error, mod} -> raise "Policy not found: #{mod}"
       {:ok, mod} -> mod

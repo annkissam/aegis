@@ -59,13 +59,10 @@ defmodule Aegis.Policy do
     quote do
       @behaviour unquote(__MODULE__)
 
-      @callback authorize(user :: any, action :: atom, resource :: any) :: boolean
-      def authorize(_, _, _), do: raise "`authorize/3` not defined for #{__MODULE__}"
+      @callback authorize(Aegis.requester_t(), Aegis.request_t()) :: boolean
+      def authorized?(_, _), do: raise "`authorize/3` not defined for #{__MODULE__}"
 
-      @callback scope(user :: any, scope :: any, action :: atom) :: any
-      def scope(_, _, _), do: raise "`scope/3` not defined for #{__MODULE__}"
-
-      defoverridable [authorize: 3, scope: 3]
+      defoverridable [authorize: 2]
     end
   end
 end
