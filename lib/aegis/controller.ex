@@ -11,18 +11,18 @@ if Code.ensure_loaded?(Phoenix) do
 
     ## Examples
 
-    ```
-    defmodule Puppy do
-      defstruct [id: nil, user_id: nil, hungry: false]
-    end
+        defmodule Puppy do
+          defstruct [id: nil, user_id: nil, hungry: false]
+        end
 
-    defmodule Puppy.Policy do
-      @behaviour Aegis.Policy
+        defmodule Puppy.Policy do
+          @behaviour Aegis.Policy
 
-      def authorize(_user, :index, _puppy), do: true
-      def authorize(_user, :show, _puppy), do: false
-    end
-    ```
+          def authorized?(_user, {:index, _puppy}), do: true
+          def authorized?(%User{id: id}, {:show, %Puppy{user_id: id}}), do: true
+          def authorized?(_user, {:show, _puppy}), do: false
+
+        end
 
         iex> conn = %Plug.Conn{}
         iex> user = :user
@@ -43,7 +43,7 @@ if Code.ensure_loaded?(Phoenix) do
     def authorized?(conn, user, resource, action) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
-      if Aegis.authorized?(user, action, resource) do
+      if Aegis.authorized?(user, {action, resource}) do
         {:ok, conn}
       else
         {:error, :not_authorized}
@@ -56,6 +56,7 @@ if Code.ensure_loaded?(Phoenix) do
 
     ## Examples
 
+    TODO..
 
     """
     @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t, term) :: Plug.t
