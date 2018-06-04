@@ -43,14 +43,11 @@ if Code.ensure_loaded?(Phoenix) do
     def authorized?(conn, user, resource, action) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
-      if authorized?(user, action, resource) do
+      if Aegis.authorized?(user, {action, resource}) do
         {:ok, conn}
       else
         {:error, :not_authorized}
       end
-    end
-    def authorized?(user, action, resource) do
-      Aegis.authorized?(user, {action, resource})
     end
 
     @doc """
@@ -176,7 +173,6 @@ if Code.ensure_loaded?(Phoenix) do
         defoverridable [current_user: 1]
 
         defdelegate authorized?(conn, user, resource, action), to: Aegis.Controller
-        defdelegate authorized?(user, action, resource), to: Aegis.Controller
         defdelegate auth_scope(user, scope, action, policy \\ nil), to: Aegis.Controller
       end
     end
