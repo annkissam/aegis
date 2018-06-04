@@ -42,6 +42,7 @@ defmodule Aegis.DefaultPolicyFinder do
   defp do_call(nil), do: {:error, nil}
   defp do_call({_, %{from: {source, schema}}})
     when is_binary(source) and is_atom(schema), do: do_call(schema)
+  defp do_call({_, [%{__struct__: module}|_t]}), do: do_call(module)
   defp do_call({_, %{__struct__: module}}), do: do_call(module)
   defp do_call({_, module}) when is_atom(module), do: do_call(module)
   defp do_call(module) when is_atom(module) do

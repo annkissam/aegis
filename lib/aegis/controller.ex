@@ -72,6 +72,46 @@ if Code.ensure_loaded?(Phoenix) do
       apply(mod, actn, [conn, conn.params, user])
     end
 
+
+    @doc """
+    Returns the set of accessible resources, for a user, for a given action.
+
+    ## Examples
+
+    Suppose your library defines the following resource and resource policy:
+
+        defmodule Puppy do
+          defstruct [id: nil, user_id: nil, hungry: false]
+        end
+
+        defmodule Puppy.Policy do
+          @behaviour Aegis.Policy
+
+          ...
+
+          # users should only be able to see puppies that belong to them..
+          def scope(%User{id: user_id}, {:index, scope}) do
+            Enum.filter(scope, &(&1.user_id == user_id))
+          end
+
+        end
+
+    We can use `auth_scope/4` to appropriately limit access to puppies for a given user
+
+        iex> user = %User{id: 1}
+        iex> puppy_1 = %Puppy{id: 1, user_id: 1}
+        iex> puppy_2 = %Puppy{id: 2, user_id: 2}
+        iex> all_puppies = [puppy_1, puppy_2]
+        iex> Aegis.Controller.auth_scope(user, all_puppies, :index)
+        [%Puppy{id: 1, user_id: 1, hungry: false}]
+        iex> Aegis.Controller.auth_scope(user, all_puppies, :index, Puppy.Policy)
+        [%Puppy{id: 1, user_id: 1, hungry: false}]
+    """
+    @spec auth_scope(term(), term(), atom(), module() | nil) :: list()
+    def auth_scope(user, scope, action, policy \\ nil) do
+      Aegis.auth_scope(user, {action, scope}, policy)
+    end
+
     @doc """
     Allows another module to inherit `Aegis.Controller` methods.
 
@@ -133,7 +173,7 @@ if Code.ensure_loaded?(Phoenix) do
         defoverridable [current_user: 1]
 
         defdelegate authorized?(conn, user, resource, action), to: Aegis.Controller
-        defdelegate auth_scope(user, scope, action), to: Aegis
+        defdelegate auth_scope(user, scope, action, policy \\ nil), to: Aegis.Controller
       end
     end
   end

@@ -93,6 +93,15 @@ defmodule Aegis do
     apply(policy, :authorized?, [accessor, accessible])
   end
 
+  @spec auth_scope(__MODULE__.accessor_t(), __MODULE__.accessible_t(), module()) :: list()
+  def auth_scope(accessor, accessible, policy \\ nil)
+  def auth_scope(accessor, accessible, nil) do
+    auth_scope(accessor, accessible, fetch_policy_module(accessible))
+  end
+  def auth_scope(accessor, accessible, policy) do
+    apply(policy, :scope, [accessor, accessible])
+  end
+
   @default_finder __MODULE__.DefaultPolicyFinder
 
   @policy_finder Application.get_env(:aegis, :policy_finder, @default_finder)
