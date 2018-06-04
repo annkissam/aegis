@@ -2,26 +2,6 @@ defmodule Aegis do
   @moduledoc """
   Lightweight, flexible authorization.
 
-  ## Configuration
-
-  TODO: add documentation for configuration options
-
-    * `policy_finder`
-  """
-
-  @type accessor_t :: Process.t() | any()
-
-  @type accessible_t :: Tuple.t() | fun()
-
-  @doc """
-  Returns `true` if an accessor is authorized to access a resource or perform an
-  operation. The responsibility for determining whether or not a given resource
-  or operation is accessible to an accessor is delegated to a policy module.
-
-  The policy module for any given authorization check can be explicitely
-  specified, or, if no policy is provided, an attempt is made to locate
-  a policy for the accessible via a search based on conventional policy naming.
-
   ## Example
 
   As an example, suppose your library defines the following resources:
@@ -83,6 +63,26 @@ defmodule Aegis do
       iex> Aegis.authorized?(:user, {:index, Kitten}, Puppy.Policy)
       true
 
+
+  ## Configuration
+
+  TODO: add documentation for configuration options
+
+    * `policy_finder`
+  """
+
+  @type accessor_t :: Process.t() | any()
+
+  @type accessible_t :: Tuple.t() | fun()
+
+  @doc """
+  Returns `true` if an accessor is authorized to access a resource or perform an
+  operation. The responsibility for determining whether or not a given resource
+  or operation is accessible to an accessor is delegated to a policy module.
+
+  The policy module for any given authorization check can be explicitely
+  specified, or, if no policy is provided, an attempt is made to locate
+  a policy for the accessible via a search based on conventional policy naming.
   """
   @spec authorized?(__MODULE__.accessor_t(), __MODULE__.accessible_t(), module()) :: boolean
   def authorized?(accessor, accessible, policy \\ nil)
