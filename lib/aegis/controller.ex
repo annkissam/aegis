@@ -153,7 +153,7 @@ if Code.ensure_loaded?(Phoenix) do
       quote do
         if Enum.empty?(unquote(excluded_actions)) do
           def action(conn, _opts) do
-            Aegis.Controller.call_action_and_verify_authorized(__MODULE__, action_name(conn), conn, current_user(conn))
+            call_action_and_verify_authorized(__MODULE__, action_name(conn), conn, current_user(conn))
           end
         else
           def action(conn, _opts) do
@@ -163,7 +163,7 @@ if Code.ensure_loaded?(Phoenix) do
               actn when actn in unquote(excluded_actions) ->
                 apply(__MODULE__, actn, [conn, conn.params])
               actn ->
-                Aegis.Controller.call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
+                call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
             end
           end
         end
@@ -172,8 +172,14 @@ if Code.ensure_loaded?(Phoenix) do
 
         defoverridable [current_user: 1]
 
-        defdelegate authorized?(conn, user, resource, action), to: Aegis.Controller
-        defdelegate auth_scope(user, scope, action, policy \\ nil), to: Aegis.Controller
+        defdelegate call_action_and_verify_authorized(mod, actn, conn, user),
+          to: unquote(__MODULE__)
+
+        defdelegate authorized?(conn, user, resource, action),
+          to: unquote(__MODULE__)
+
+        defdelegate auth_scope(user, scope, action, policy \\ nil),
+          to: unquote(__MODULE__)
       end
     end
   end
