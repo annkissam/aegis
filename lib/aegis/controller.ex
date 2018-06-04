@@ -90,7 +90,7 @@ if Code.ensure_loaded?(Phoenix) do
           ...
 
           # users should only be able to see puppies that belong to them..
-          def scope(%User{id: user_id}, {:index, scope}) do
+          def auth_scope(%User{id: user_id}, {:index, scope}) do
             Enum.filter(scope, &(&1.user_id == user_id))
           end
 
