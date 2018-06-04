@@ -113,7 +113,7 @@ defmodule Aegis do
     auth_scope(accessor, accessible, fetch_policy_module(accessible))
   end
   def auth_scope(accessor, accessible, policy) do
-    apply(policy, :scope, [accessor, accessible])
+    apply(policy, :auth_scope, [accessor, accessible])
   end
 
   @default_finder __MODULE__.DefaultPolicyFinder
