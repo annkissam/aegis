@@ -3,5 +3,5 @@ defmodule Aegis.PolicyFinder do
   Behaviour that provides callback specifications for Policy-finding.
   """
 
-  @callback call(Aegis.request_t()) :: {:ok, module()} | {:error, String.t()}
+  @callback call(Aegis.Accessor.t()) :: {:ok, module()} | {:error, String.t()}
 end
