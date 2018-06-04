@@ -53,7 +53,7 @@ defmodule Aegis do
   convention:
 
       iex> Aegis.authorized?(:user, {:index, Kitten})
-      ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
+      ** (Aegis.PolicyNotFoundError) Policy not found: Elixir.Kitten.Policy
 
   If we really don't want to define a policy for the `Kitten` resource, one way
   we can get around this error is to explicitely pass the policy via which the
@@ -97,12 +97,14 @@ defmodule Aegis do
 
   @policy_finder Application.get_env(:aegis, :policy_finder, @default_finder)
 
-  # def __policy_finder__, do: @policy_finder
+  defmodule PolicyNotFoundError do
+    defexception [:message]
+  end
 
   defp fetch_policy_module(arg) do
     case @policy_finder.call(arg) do
-      {:error, nil} -> raise "No Policy for nil object"
-      {:error, mod} -> raise "Policy not found: #{mod}"
+      {:error, nil} -> raise PolicyNotFoundError, "No Policy for nil object"
+      {:error, mod} -> raise PolicyNotFoundError, "Policy not found: #{mod}"
       {:ok, mod} -> mod
     end
   end
