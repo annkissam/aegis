@@ -73,9 +73,21 @@ defmodule Aegis do
         config :aegis, :policy_finder, MyPolicyFinder
   """
 
-  @type accessor_t :: Process.t() | any()
+  defmodule Accessor do
+    @moduledoc false
 
-  @type accessible_t :: Tuple.t() | fun()
+    @type t :: Process.t() | any()
+  end
+
+  defmodule Accessible do
+    @moduledoc false
+
+    @type t :: Tuple.t() | fun()
+  end
+
+  @type accessor :: Accessor.t()
+
+  @type accessible :: Accessible.t()
 
   @doc """
   Returns `true` if an accessor is authorized to access a resource or perform an
@@ -86,7 +98,7 @@ defmodule Aegis do
   specified, or, if no policy is provided, an attempt is made to locate
   a policy for the accessible via a search based on conventional policy naming.
   """
-  @spec authorized?(__MODULE__.accessor_t(), __MODULE__.accessible_t(), module()) :: boolean
+  @spec authorized?(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: boolean
   def authorized?(accessor, accessible, policy \\ nil)
   def authorized?(accessor, accessible, nil) do
     authorized?(accessor, accessible, fetch_policy_module(accessible))
@@ -95,7 +107,7 @@ defmodule Aegis do
     apply(policy, :authorized?, [accessor, accessible])
   end
 
-  @spec auth_scope(__MODULE__.accessor_t(), __MODULE__.accessible_t(), module()) :: list()
+  @spec auth_scope(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: list()
   def auth_scope(accessor, accessible, policy \\ nil)
   def auth_scope(accessor, accessible, nil) do
     auth_scope(accessor, accessible, fetch_policy_module(accessible))
