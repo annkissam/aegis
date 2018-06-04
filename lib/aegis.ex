@@ -66,9 +66,11 @@ defmodule Aegis do
 
   ## Configuration
 
-  TODO: add documentation for configuration options
+  The following configuration options are available for assignment:
 
-    * `policy_finder`
+    * `policy_finder`- Aegis uses this value to determine how it policies are found. Defaults to `DefaultPolicyFinder`.
+
+        config :aegis, :policy_finder, MyPolicyFinder
   """
 
   @type accessor_t :: Process.t() | any()
@@ -105,6 +107,9 @@ defmodule Aegis do
   @default_finder __MODULE__.DefaultPolicyFinder
 
   @policy_finder Application.get_env(:aegis, :policy_finder, @default_finder)
+
+  @doc false
+  def __policy_finder__, do: @policy_finder
 
   defmodule PolicyNotFoundError do
     defexception [:message]
