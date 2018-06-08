@@ -1,108 +1,136 @@
 defmodule Aegis do
   @moduledoc """
   Lightweight, flexible authorization.
-  """
-
-  @doc """
-  Returns `true` if a user is authorized to perform an action on a given resource as dictated by the resource's corresponding policy definition.
-
 
   ## Example
 
-  ```
-  defmodule Puppy do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
+  As an example, suppose your library defines the following resources:
 
-  defmodule Puppy.Policy do
-    @behaviour Aegis.Policy
+      defmodule User do
+        defstruct [id: nil]
+      end
 
-    def authorize(_user, :index, _puppy), do: true
-  end
+      defmodule Puppy do
+        defstruct [id: nil, user_id: nil, hungry: false]
+      end
 
-  defmodule Kitten do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
-  ```
+      defmodule Kitten do
+        defstruct [id: nil, user_id: nil, hungry: false]
+      end
 
-    iex> user = :user
-    iex> resource = Puppy
-    iex> Aegis.authorized?(user, :index, resource)
-    true
-    iex> Aegis.authorized?(user, :show, resource)
-    false
+  If you want to define access to the `Puppy` resource, the first step is to define a
+  policy for the puppy resource. Maybe something like:
 
-    iex> user = :user
-    iex> action = :index
-    iex> resource = Kitten
-    iex> Aegis.authorized?(user, action, resource)
-    ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
+      defmodule Puppy.Policy do
+        @behaviour Aegis.Policy
+
+        def authorized?(_user, {:index, _puppy}), do: true
+        def authorized?(%User{id: id}, {:show, %Puppy{user_id: id}}), do: true
+        def authorized?(_user, {:show, _puppy}), do: false
+
+      end
+
+  For the purposes of our example, the puppy policy definition above specifies that:
+    * any user has access to the "index" page of puppy data, and
+    * only users who own particular puppies (i.e. the puppy's `user_id` matches the users `id`) will be able to access the data corresponding to their "show" page
+
+  With this, we can check check for authorization of puppies via making calls to
+  `Aegis.authorized?/3` with the appropriate arguments:
+
+      iex> Aegis.authorized?(%User{id: 1}, {:index, Puppy}, Puppy.Policy)
+      true
+      iex> Aegis.authorized?(%User{id: 2}, {:index, Puppy}, Puppy.Policy)
+      true
+      iex> Aegis.authorized?(%User{id: 1}, {:show, %Puppy{user_id: 1}}, Puppy.Policy)
+      true
+      iex> Aegis.authorized?(%User{id: 1}, {:show, %Puppy{user_id: 2}}, Puppy.Policy)
+      false
+
+  At this point, you may have noticed that we haven't defined a policy
+  definition for our `Kitten` resource. As such, if we attempt to check for
+  authorization, we will receive an error that lets us know that a
+  corresponding policy wasn't found via a lookup based off policy naming
+  convention:
+
+      iex> Aegis.authorized?(:user, {:index, Kitten})
+      ** (Aegis.PolicyNotFoundError) Policy not found: Elixir.Kitten.Policy
+
+  If we really don't want to define a policy for the `Kitten` resource, one way
+  we can get around this error is to explicitely pass the policy via which the
+  kitten resource should be authorized. For the purpose of this example, we'll
+  just specify that the kitten "index" page can refer to the `Puppy.Policy`:
+
+      iex> Aegis.authorized?(:user, {:index, Kitten}, Puppy.Policy)
+      true
+
+
+  ## Configuration
+
+  The following configuration options are available for assignment:
+
+    * `policy_finder`- Aegis uses this value to determine how it policies are found. Defaults to `Aegis.DefaultPolicyFinder`.
+
+        config :aegis, :policy_finder, MyPolicyFinder
   """
-  @spec authorized?(user :: any, action :: atom, resource :: any) :: boolean
-  def authorized?(user, action, resource) do
-    resource
-    |> fetch_policy_module
-    |> authorized?(user, action, resource)
+
+  defmodule Accessor do
+    @moduledoc false
+
+    @type t :: Process.t() | any()
   end
 
-  @spec authorized?(mod :: module, user :: any, action :: atom, resource :: any) :: boolean
-  def authorized?(mod, user, action, resource) do
-    apply(mod, :authorize, [user, action, resource])
+  defmodule Accessible do
+    @moduledoc false
+
+    @type t :: Tuple.t() | fun()
   end
+
+  @type accessor :: Accessor.t()
+
+  @type accessible :: Accessible.t()
 
   @doc """
-  Returns scope for a resource for a user for a given action as dictated by the
-  resource's corresponding policy definition.
+  Returns `true` if an accessor is authorized to access a resource or perform an
+  operation. The responsibility for determining whether or not a given resource
+  or operation is accessible to an accessor is delegated to a policy module.
 
-
-  ## Example
-
-  ```
-  defmodule Puppy do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
-
-  defmodule Puppy.Policy do
-    @behaviour Aegis.Policy
-
-    def scope(_user, _scope, :index), do: :index_scope
-    def scope(_user, _scope, :show), do: :show_scope
-  end
-
-  defmodule Kitten do
-    defstruct [id: nil, user_id: nil, hungry: false]
-  end
-  ```
-
-      iex> user = :user
-      iex> scope = %{from: {"puppies", Puppy}}
-      iex> Aegis.auth_scope(user, scope, :index)
-      :index_scope
-      iex> Aegis.auth_scope(user, scope, :show)
-      :show_scope
-
-      iex> user = :user
-      iex> scope = %{from: {"kittens", Kitten}}
-      iex> Aegis.auth_scope(user, scope, :index)
-      ** (RuntimeError) Policy not found: Elixir.Kitten.Policy
+  The policy module for any given authorization check can be explicitely
+  specified, or, if no policy is provided, an attempt is made to locate
+  a policy for the accessible via a search based on conventional policy naming.
   """
-  @spec auth_scope(user :: any, scope :: any, action :: atom) :: any
-  def auth_scope(user, scope, action) do
-    scope
-    |> fetch_policy_module
-    |> auth_scope(user, scope, action)
+  @spec authorized?(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: boolean
+  def authorized?(accessor, accessible, policy \\ nil)
+  def authorized?(accessor, accessible, nil) do
+    authorized?(accessor, accessible, fetch_policy_module(accessible))
+  end
+  def authorized?(accessor, accessible, policy) do
+    apply(policy, :authorized?, [accessor, accessible])
   end
 
-  @spec auth_scope(mod :: module, user :: any, scope :: any, action :: atom) :: any
-  def auth_scope(mod, user, scope, action) do
-    apply(mod, :scope, [user, scope, action])
+  @spec auth_scope(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: list()
+  def auth_scope(accessor, accessible, policy \\ nil)
+  def auth_scope(accessor, accessible, nil) do
+    auth_scope(accessor, accessible, fetch_policy_module(accessible))
+  end
+  def auth_scope(accessor, accessible, policy) do
+    apply(policy, :auth_scope, [accessor, accessible])
   end
 
-  @spec fetch_policy_module(any) :: module | :error
-  def fetch_policy_module(arg) do
-    case Aegis.PolicyFinder.call(arg) do
-      {:error, nil} -> raise "No Policy for nil object"
-      {:error, mod} -> raise "Policy not found: #{mod}"
+  @default_finder __MODULE__.DefaultPolicyFinder
+
+  @policy_finder Application.get_env(:aegis, :policy_finder, @default_finder)
+
+  @doc false
+  def __policy_finder__, do: @policy_finder
+
+  defmodule PolicyNotFoundError do
+    defexception [:message]
+  end
+
+  defp fetch_policy_module(arg) do
+    case @policy_finder.call(arg) do
+      {:error, nil} -> raise PolicyNotFoundError, "No Policy for nil object"
+      {:error, mod} -> raise PolicyNotFoundError, "Policy not found: #{mod}"
       {:ok, mod} -> mod
     end
   end
