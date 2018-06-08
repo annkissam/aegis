@@ -1,10 +1,10 @@
 if Code.ensure_loaded?(Phoenix) do
-  defmodule Aegis.Controller do
+  defmodule Aegis.Phoenix.Controller do
     @moduledoc """
     Wraps controllers with Aegis authorization functionality.
     """
 
-    defmodule Aegis.AuthorizationNotPerformedError do
+    defmodule AuthorizationNotPerformedError do
       @moduledoc """
       Raised when authorization has not been implemented by the end of the Plug
       pipeline.
@@ -12,7 +12,7 @@ if Code.ensure_loaded?(Phoenix) do
       defexception [conn: nil, message: "Not Authorized"]
     end
 
-    defimpl Plug.Exception, for: Aegis.AuthorizationNotPerformedError do
+    defimpl Plug.Exception, for: AuthorizationNotPerformedError do
       def status(_exception), do: 403
     end
 
@@ -40,7 +40,7 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :index
-        iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action)
+        iex> {:ok, conn} = Aegis.Phoenix.Controller.authorized?(conn, user, resource, action)
         iex> conn.private[:aegis_auth_performed]
         true
 
@@ -48,7 +48,7 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :show
-        iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action)
+        iex> {:error, :not_authorized} == Aegis.Phoenix.Controller.authorized?(conn, user, resource, action)
         true
     """
     @spec authorized?(Plug.Conn.t, term, term, atom) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
@@ -77,7 +77,7 @@ if Code.ensure_loaded?(Phoenix) do
         if conn.private[:aegis_auth_performed] do
           conn
         else
-          raise Aegis.AuthorizationNotPerformedError
+          raise AuthorizationNotPerformedError
         end
       end)
 
@@ -114,9 +114,9 @@ if Code.ensure_loaded?(Phoenix) do
         iex> puppy_1 = %Puppy{id: 1, user_id: 1}
         iex> puppy_2 = %Puppy{id: 2, user_id: 2}
         iex> all_puppies = [puppy_1, puppy_2]
-        iex> Aegis.Controller.auth_scope(user, all_puppies, :index)
+        iex> Aegis.Phoenix.Controller.auth_scope(user, all_puppies, :index)
         [%Puppy{id: 1, user_id: 1, hungry: false}]
-        iex> Aegis.Controller.auth_scope(user, all_puppies, :index, Puppy.Policy)
+        iex> Aegis.Phoenix.Controller.auth_scope(user, all_puppies, :index, Puppy.Policy)
         [%Puppy{id: 1, user_id: 1, hungry: false}]
     """
     @spec auth_scope(term(), term(), atom(), module() | nil) :: list()
@@ -125,7 +125,7 @@ if Code.ensure_loaded?(Phoenix) do
     end
 
     @doc """
-    Allows another module to inherit `Aegis.Controller` methods.
+    Allows another module to inherit `Aegis.Phoenix.Controller` methods.
 
     ## Options
     - `except` - list of actions to exclude from aegis authorization; defaults to an empty list
@@ -137,7 +137,7 @@ if Code.ensure_loaded?(Phoenix) do
     ```
     defmodule MyApp.PuppyController do
       use MyApp, :controller
-      use Aegis.Controller
+      use Aegis.Phoenix.Controller
 
       def current_user(conn) do
         conn.assigns[:user]
@@ -151,7 +151,7 @@ if Code.ensure_loaded?(Phoenix) do
     ```
     defmodule MyApp.Controller do
       use MyApp, :controller
-      use Aegis.Controller, except: [:custom_action]
+      use Aegis.Phoenix.Controller, except: [:custom_action]
 
       def current_user(conn) do
         conn.assigns[:user]
