@@ -17,7 +17,7 @@ defmodule AegisTest.PuppyController do
   def show(conn, %{"id" => id}, user) do
     puppy = %Puppy{user_id: id}
 
-    with {:ok, conn} <- authorized?(conn, user, puppy, :show) do
+    with {:ok, conn} <- authorized?(conn, user, puppy, action: :show) do
       text conn, "showing pup"
     end
   end
@@ -36,7 +36,7 @@ defmodule AegisTest.PuppyWithoutExcludedActionsController do
   action_fallback AegisTest.FallbackController
 
   def index(conn, _params, user) do
-    with {:ok, conn} <- authorized?(conn, user, Puppy, :index) do
+    with {:ok, conn} <- authorized?(conn, user, Puppy, action: :index) do
       text conn, "showing pup(s)"
     end
   end

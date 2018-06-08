@@ -28,7 +28,7 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :index
-        iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action)
+        iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action: action)
         iex> conn.private[:aegis_auth_performed]
         true
 
@@ -36,14 +36,17 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :show
-        iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action)
+        iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action: action)
         true
     """
-    @spec authorized?(Plug.Conn.t, term, term, atom) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
-    def authorized?(conn, user, resource, action) do
+    @spec authorized?(Plug.Conn.t, term, term, Keyword.t()) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
+    def authorized?(conn, user, resource, opts) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
-      if Aegis.authorized?(user, {action, resource}) do
+      action = Keyword.get_lazy(opts, :action, fn -> Phoenix.Controller.action_name(conn) end)
+      policy = Keyword.get(opts, :policy)
+
+      if Aegis.authorized?(user, {action, resource}, policy) do
         {:ok, conn}
       else
         {:error, :not_authorized}
@@ -175,7 +178,7 @@ if Code.ensure_loaded?(Phoenix) do
         defdelegate call_action_and_verify_authorized(mod, actn, conn, user),
           to: unquote(__MODULE__)
 
-        defdelegate authorized?(conn, user, resource, action),
+        defdelegate authorized?(conn, user, resource, opts \\ []),
           to: unquote(__MODULE__)
 
         defdelegate auth_scope(user, scope, action, policy \\ nil),
