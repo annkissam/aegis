@@ -116,19 +116,16 @@ defmodule Aegis do
     apply(policy, :auth_scope, [accessor, accessible])
   end
 
-  @default_finder __MODULE__.DefaultPolicyFinder
-
-  @policy_finder Application.get_env(:aegis, :policy_finder, @default_finder)
-
-  @doc false
-  def __policy_finder__, do: @policy_finder
+  def policy_finder do
+    Application.get_env(:aegis, :policy_finder, __MODULE__.DefaultPolicyFinder)
+  end
 
   defmodule PolicyNotFoundError do
     defexception [:message]
   end
 
   defp fetch_policy_module(arg) do
-    case @policy_finder.call(arg) do
+    case policy_finder.call(arg) do
       {:error, nil} -> raise PolicyNotFoundError, "No Policy for nil object"
       {:error, mod} -> raise PolicyNotFoundError, "Policy not found: #{mod}"
       {:ok, mod} -> mod
