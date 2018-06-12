@@ -110,6 +110,28 @@ if Code.ensure_loaded?(Phoenix) do
         [%Puppy{id: 1, user_id: 1, hungry: false}]
         iex> Aegis.Controller.auth_scope(user, all_puppies, :index, Puppy.Policy)
         [%Puppy{id: 1, user_id: 1, hungry: false}]
+
+    In the above example, `Puppy.Policy.auth_scope` is written such that it
+    takes in and filters an enumerable. A more common use case--if you're
+    integrating Aegis with database-backed data--is to filter data via building
+    a query that limits what data is returned.
+
+    For example, assuming our app uses Ecto as a database wrapper,
+    `Puppy.Policy.auth_scope/2` can be rewritten as follows, so that data is
+    filtered as part of the querying process:
+
+        defmodule Puppy.Policy do
+          @behaviour Aegis.Policy
+
+          ...
+
+          def auth_scope(%User{id: user_id}, {:index, scope}) do
+            import Ecto.Query
+
+            scope |> where([p], p.user_id == ^user_id)
+          end
+
+        end
     """
     @spec auth_scope(term(), term(), atom(), module() | nil) :: list()
     def auth_scope(user, scope, action, policy \\ nil) do
