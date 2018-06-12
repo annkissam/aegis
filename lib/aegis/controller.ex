@@ -28,7 +28,7 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :index
-        iex> {:ok, conn} = Aegis.Controller.authorized?(conn, user, resource, action: action)
+        iex> {:ok, {:authorized, conn}} = Aegis.Controller.authorized?(conn, user, resource, action: action)
         iex> conn.private[:aegis_auth_performed]
         true
 
@@ -36,7 +36,8 @@ if Code.ensure_loaded?(Phoenix) do
         iex> user = :user
         iex> resource = Puppy
         iex> action = :show
-        iex> {:error, :not_authorized} == Aegis.Controller.authorized?(conn, user, resource, action: action)
+        iex> {:error, {:not_authorized, conn}} = Aegis.Controller.authorized?(conn, user, resource, action: action)
+        iex> conn.private[:aegis_auth_performed]
         true
     """
     @spec authorized?(Plug.Conn.t, term, term, Keyword.t()) :: {:ok, Plug.Conn.t} | {:error, :not_authorized}
@@ -47,9 +48,9 @@ if Code.ensure_loaded?(Phoenix) do
       policy = Keyword.get(opts, :policy)
 
       if Aegis.authorized?(user, {action, resource}, policy) do
-        {:ok, conn}
+        {:ok, {:authorized, conn}}
       else
-        {:error, :not_authorized}
+        {:error, {:not_authorized, conn}}
       end
     end
 
