@@ -70,7 +70,9 @@ defmodule Aegis do
 
     * `policy_finder`- Aegis uses this value to determine how it policies are found. Defaults to `Aegis.DefaultPolicyFinder`.
 
-        config :aegis, :policy_finder, MyPolicyFinder
+      ```elixir
+      config :aegis, :policy_finder, MyPolicyFinder
+      ```
   """
 
   defmodule Accessor do

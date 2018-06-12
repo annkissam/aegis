@@ -18,14 +18,14 @@ defmodule Aegis.DefaultPolicyFinder do
 
   ## Examples:
 
-  - when Puppy.Policy is defined
+  When Puppy.Policy is defined:
 
       iex> Aegis.PolicyFinder.call(Puppy)
       {:ok, Puppy.Policy}
       iex> Aegis.PolicyFinder.call(%Puppy{})
       {:ok, Puppy.Policy}
 
-  - when a policy is **not** defined for a structure
+  When a policy is **not** defined for a structure:
 
       iex> Aegis.PolicyFinder.call(Kitten)
       {:error, "Elixir.Kitten.Policy"}
@@ -33,6 +33,7 @@ defmodule Aegis.DefaultPolicyFinder do
       {:error, "Elixir.Kitten.Policy"}
       iex> Aegis.PolicyFinder.call(nil)
       {:error, nil}
+
   """
   @behaviour Aegis.PolicyFinder
 
