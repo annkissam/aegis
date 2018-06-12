@@ -1,11 +1,11 @@
 defmodule Puppy.Policy do
   @behaviour Aegis.Policy
 
-  def authorize(%User{id: id}, :show, %Puppy{user_id: id}), do: true
-  def authorize(_user, :show, _puppy), do: false
+  def authorized?(_user, {:index, _puppy}), do: true
+  def authorized?(%User{id: id}, {:show, %Puppy{user_id: id}}), do: true
+  def authorized?(_user, {:show, _puppy}), do: false
 
-  def authorize(_user, :index, _puppy), do: true
-
-  def scope(_user, _scope, :index), do: :index_scope
-  def scope(_user, _scope, :show), do: :show_scope
+  def auth_scope(%User{id: user_id}, {:index, scope}) do
+    Enum.filter(scope, &(&1.user_id == user_id))
+  end
 end

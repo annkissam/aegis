@@ -1,18 +1,18 @@
 defmodule Aegis.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.2.0"
   @url "https://github.com/annkissam/aegis"
   @maintainers [
     "Josh Adams",
-    "Eric Sullivan",
+    "Eric Sullivan"
   ]
 
   def project do
     [
       app: :aegis,
       version: @version,
-      elixir: "~> 1.5",
+      elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: "Lightweight, flexible resource authorization.",
@@ -20,8 +20,8 @@ defmodule Aegis.MixProject do
       source_url: @url,
       homepage_url: @url,
       docs: docs(),
-      elixirc_paths: elixirc_paths(Mix.env),
-      aliases: aliases(),
+      elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases()
     ]
   end
 
@@ -39,7 +39,7 @@ defmodule Aegis.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.3", optional: true},
-      {:ex_doc, "~> 0.10", only: :dev},
+      {:ex_doc, "~> 0.10", only: :dev}
     ]
   end
 
@@ -56,16 +56,16 @@ defmodule Aegis.MixProject do
       maintainers: @maintainers,
       licenses: ["MIT"],
       links: %{github: @url},
-      files: ["lib", "mix.exs", "README*", "LICENSE*", "CHANGELOG.md"],
+      files: ["lib", "mix.exs", "README*", "LICENSE*", "CHANGELOG.md"]
     ]
   end
 
   defp aliases do
-    ["publish": ["hex.publish", &git_tag/1]]
+    [publish: ["hex.publish", &git_tag/1]]
   end
 
   defp git_tag(_args) do
-    System.cmd "git", ["tag", "v" <> Mix.Project.config[:version]]
-    System.cmd "git", ["push", "--tags"]
+    System.cmd("git", ["tag", "v" <> Mix.Project.config()[:version]])
+    System.cmd("git", ["push", "--tags"])
   end
 end
