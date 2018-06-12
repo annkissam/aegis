@@ -4,7 +4,7 @@ if Code.ensure_loaded?(Phoenix) do
     Raised when authorization has not been implemented by the end of the Plug
     pipeline.
     """
-    defexception [conn: nil, message: "Not Authorized"]
+    defexception conn: nil, message: "Not Authorized"
   end
 
   defimpl Plug.Exception, for: Aegis.AuthorizationNotPerformedError do

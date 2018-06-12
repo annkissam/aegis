@@ -53,7 +53,7 @@ defmodule Aegis.Policy do
         raise "`authorize/2` not defined for #{__MODULE__}"
       end
 
-      defoverridable [authorized?: 2]
+      defoverridable authorized?: 2
     end
   end
 end

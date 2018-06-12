@@ -8,5 +8,4 @@ defmodule Puppy.Policy do
   def auth_scope(%User{id: user_id}, {:index, scope}) do
     Enum.filter(scope, &(&1.user_id == user_id))
   end
-
 end

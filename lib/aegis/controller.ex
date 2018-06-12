@@ -43,7 +43,8 @@ if Code.ensure_loaded?(Phoenix) do
         iex> conn.private[:aegis_auth_performed]
         true
     """
-    @spec authorized?(Plug.Conn.t, term, term, Keyword.t()) :: {:ok, Plug.Conn.t()} | {:error, Plug.Conn.t()}
+    @spec authorized?(Plug.Conn.t(), term, term, Keyword.t()) ::
+            {:ok, Plug.Conn.t()} | {:error, Plug.Conn.t()}
     def authorized?(conn, user, resource, opts) do
       conn = Plug.Conn.put_private(conn, :aegis_auth_performed, true)
 
@@ -66,19 +67,19 @@ if Code.ensure_loaded?(Phoenix) do
     TODO..
 
     """
-    @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t, term) :: Plug.t
+    @spec call_action_and_verify_authorized(module, atom, Plug.Conn.t(), term) :: Plug.t()
     def call_action_and_verify_authorized(mod, actn, conn, user) do
-      conn = Plug.Conn.register_before_send(conn, fn conn ->
-        if conn.private[:aegis_auth_performed] do
-          conn
-        else
-          raise Aegis.AuthorizationNotPerformedError
-        end
-      end)
+      conn =
+        Plug.Conn.register_before_send(conn, fn conn ->
+          if conn.private[:aegis_auth_performed] do
+            conn
+          else
+            raise Aegis.AuthorizationNotPerformedError
+          end
+        end)
 
       apply(mod, actn, [conn, conn.params, user])
     end
-
 
     @doc """
     Returns the set of accessible resources, for a user, for a given action.
@@ -182,7 +183,12 @@ if Code.ensure_loaded?(Phoenix) do
       quote do
         if Enum.empty?(unquote(excluded_actions)) do
           def action(conn, _opts) do
-            call_action_and_verify_authorized(__MODULE__, action_name(conn), conn, current_user(conn))
+            call_action_and_verify_authorized(
+              __MODULE__,
+              action_name(conn),
+              conn,
+              current_user(conn)
+            )
           end
         else
           def action(conn, _opts) do
@@ -191,15 +197,16 @@ if Code.ensure_loaded?(Phoenix) do
             |> case do
               actn when actn in unquote(excluded_actions) ->
                 apply(__MODULE__, actn, [conn, conn.params])
+
               actn ->
                 call_action_and_verify_authorized(__MODULE__, actn, conn, current_user(conn))
             end
           end
         end
 
-        def current_user(_), do: raise "`current_user/1` not defined for #{__MODULE__}"
+        def current_user(_), do: raise("`current_user/1` not defined for #{__MODULE__}")
 
-        defoverridable [current_user: 1]
+        defoverridable current_user: 1
 
         defdelegate call_action_and_verify_authorized(mod, actn, conn, user),
           to: unquote(__MODULE__)

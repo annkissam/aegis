@@ -40,11 +40,15 @@ defmodule Aegis.DefaultPolicyFinder do
   def call(request), do: do_call(request)
 
   defp do_call(nil), do: {:error, nil}
+
   defp do_call({_, %{from: {source, schema}}})
-    when is_binary(source) and is_atom(schema), do: do_call(schema)
-  defp do_call({_, [%{__struct__: module}|_t]}), do: do_call(module)
+       when is_binary(source) and is_atom(schema),
+       do: do_call(schema)
+
+  defp do_call({_, [%{__struct__: module} | _t]}), do: do_call(module)
   defp do_call({_, %{__struct__: module}}), do: do_call(module)
   defp do_call({_, module}) when is_atom(module), do: do_call(module)
+
   defp do_call(module) when is_atom(module) do
     try do
       {:ok, Module.safe_concat(module, "Policy")}
@@ -52,6 +56,6 @@ defmodule Aegis.DefaultPolicyFinder do
       ArgumentError -> {:error, "#{module}.Policy"}
     end
   end
-  defp do_call(args), do: {:error, args}
 
+  defp do_call(args), do: {:error, args}
 end

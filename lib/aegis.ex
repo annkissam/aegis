@@ -100,18 +100,22 @@ defmodule Aegis do
   """
   @spec authorized?(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: boolean
   def authorized?(accessor, accessible, policy \\ nil)
+
   def authorized?(accessor, accessible, nil) do
     authorized?(accessor, accessible, fetch_policy_module(accessible))
   end
+
   def authorized?(accessor, accessible, policy) do
     apply(policy, :authorized?, [accessor, accessible])
   end
 
   @spec auth_scope(__MODULE__.accessor(), __MODULE__.accessible(), module()) :: list()
   def auth_scope(accessor, accessible, policy \\ nil)
+
   def auth_scope(accessor, accessible, nil) do
     auth_scope(accessor, accessible, fetch_policy_module(accessible))
   end
+
   def auth_scope(accessor, accessible, policy) do
     apply(policy, :auth_scope, [accessor, accessible])
   end
@@ -125,7 +129,7 @@ defmodule Aegis do
   end
 
   defp fetch_policy_module(arg) do
-    case policy_finder.call(arg) do
+    case policy_finder().call(arg) do
       {:error, nil} -> raise PolicyNotFoundError, "No Policy for nil object"
       {:error, mod} -> raise PolicyNotFoundError, "Policy not found: #{mod}"
       {:ok, mod} -> mod

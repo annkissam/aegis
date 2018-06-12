@@ -4,8 +4,9 @@ defmodule Aegis.ControllerTest do
   doctest Aegis.Controller
 
   test "index" do
-    conn = Plug.Test.conn(:get, "/puppies")
-           |> Plug.Conn.put_private(:phoenix_action, :index)
+    conn =
+      Plug.Test.conn(:get, "/puppies")
+      |> Plug.Conn.put_private(:phoenix_action, :index)
 
     conn = AegisTest.PuppyController.action(conn, [])
 
@@ -13,8 +14,9 @@ defmodule Aegis.ControllerTest do
   end
 
   test "show authorization passed" do
-    conn = Plug.Test.conn(:get, "/puppies/1", %{id: 1})
-           |> Plug.Conn.put_private(:phoenix_action, :show)
+    conn =
+      Plug.Test.conn(:get, "/puppies/1", %{id: 1})
+      |> Plug.Conn.put_private(:phoenix_action, :show)
 
     conn = AegisTest.PuppyController.action(conn, [])
 
@@ -22,8 +24,9 @@ defmodule Aegis.ControllerTest do
   end
 
   test "show authorization failed" do
-    conn = Plug.Test.conn(:get, "/puppies/2", %{id: 2})
-           |> Plug.Conn.put_private(:phoenix_action, :show)
+    conn =
+      Plug.Test.conn(:get, "/puppies/2", %{id: 2})
+      |> Plug.Conn.put_private(:phoenix_action, :show)
 
     conn = AegisTest.PuppyController.action(conn, [])
 
@@ -31,8 +34,9 @@ defmodule Aegis.ControllerTest do
   end
 
   test "show authorization not performed" do
-    conn = Plug.Test.conn(:get, "/puppies/3", %{id: 3})
-           |> Plug.Conn.put_private(:phoenix_action, :show)
+    conn =
+      Plug.Test.conn(:get, "/puppies/3", %{id: 3})
+      |> Plug.Conn.put_private(:phoenix_action, :show)
 
     assert_raise Plug.Conn.WrapperError, fn ->
       AegisTest.PuppyController.action(conn, [])
@@ -40,8 +44,9 @@ defmodule Aegis.ControllerTest do
   end
 
   test "index (without excluded actions)" do
-    conn = Plug.Test.conn(:get, "/puppies")
-           |> Plug.Conn.put_private(:phoenix_action, :index)
+    conn =
+      Plug.Test.conn(:get, "/puppies")
+      |> Plug.Conn.put_private(:phoenix_action, :index)
 
     conn = AegisTest.PuppyWithoutExcludedActionsController.action(conn, [])
 
@@ -56,8 +61,9 @@ defmodule Aegis.ControllerTest do
       all_puppies = [puppy_1, puppy_2]
 
       assert [puppy_1] == AegisTest.PuppyController.auth_scope(user, all_puppies, :index)
-      assert [puppy_1] == AegisTest.PuppyController.auth_scope(user, all_puppies, :index, Puppy.Policy)
+
+      assert [puppy_1] ==
+               AegisTest.PuppyController.auth_scope(user, all_puppies, :index, Puppy.Policy)
     end
   end
 end
-
