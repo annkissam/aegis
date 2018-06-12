@@ -6,8 +6,11 @@ if Code.ensure_loaded?(Phoenix) do
 
     @doc """
     Authorizes a resource, for a user, for a given action, and marks the
-    connection as having had aegis authorization perfomed via the assignment of a
-    boolean value to `aegis_auth_performed` on the connection.
+    connection as having had aegis authorization perfomed via the assignment of
+    a boolean value to `aegis_auth_performed` on the connection.
+
+    Returns a two-element tuple: if authorization check passes, then
+    `{:ok, conn}` is returned; otherwise, `{:error, conn}` is returned.
 
     ## Examples
 
