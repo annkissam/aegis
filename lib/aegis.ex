@@ -68,7 +68,7 @@ defmodule Aegis do
 
   The following configuration options are available for assignment:
 
-    * `policy_finder`- Aegis uses this value to determine how it policies are found. Defaults to `Aegis.DefaultPolicyFinder`. Note: if this value is updated via the config layer, the code will have to be recompiled in order load the latest changes.
+    * `policy_finder`- Aegis uses this value to determine how it policies are found. Defaults to `Aegis.DefaultPolicyFinder`.
 
         config :aegis, :policy_finder, MyPolicyFinder
   """
